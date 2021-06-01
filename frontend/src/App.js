@@ -1,41 +1,70 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import './App.css';
 
-import Dashboard from './components/Dashboard';
-import CreateRoom from './components/Creation';
-import ChatRoom from './components/Chat';
+import Dashboard from './pages/Dashboard';
+import CreateRoom from './pages/Creation';
+import ChatRoom from './pages/Chat';
+import { connect } from "react-redux";
+import {
+  Switch,
+  Redirect,
+  Route,
+  withRouter,
+  BrowserRouter as Router,
+} from "react-router-dom";
+
+
+// this would be a place to store data on the user 
+const mapStateToProps = (state) => {
+  return {
+      mobile: state.app.mobile
+  };
+}
 
 function App() {
-  const [view, setView] = useState('home');
+
+  // checkWindowDimensions listener
+  useEffect(() => {
+
+    // check dimensions on initial render
+    this.checkWindowDimensions()
+
+    window.addEventListener('resize', this.checkWindowDimensions);
+
+  }, [])
+
+  const checkWindowDimensions = () => {
+
+    if ( inapp.isInApp ){ // its mobile
+      this.props.toggleMobile('ON');
+    } else {
+
+      if ( window.innerWidth < 901 && !this.props.mobile ){
+        this.props.toggleMobile('ON');
+      } else if ( window.innerWidth >= 901 && this.props.mobile ){
+        
+        this.props.toggleMobile('OFF');
+      }
+    }
+  }
+
+  const mobile = { props }
 
   return (
     <div className="App">
-      <div className="navbar">
-        <a href="#home" onClick={() => setView('home')} style={{
-          marginRight: 48
-        }}>Chat App</a>
-        <a href="#home" onClick={() => setView('home')}>
-          Dashboard
-        </a>
-        <a href="#create" onClick={() => setView('create')}>
-          Create Room
-        </a>
-      </div>
-      <div className="App-Body">
-        {
-          view === 'home' ? (<Dashboard setChat={
-            () => setView('chat')
-          }/>) : null
-        }
-        {
-          view === 'create' ? (<CreateRoom/>) : null
-        }
-        {
-          view === 'chat' ? (<ChatRoom/>) : null
-        }
-      </div>
+      <Switch>
+        <Route exact path="/">
+          <Redirect to="/rooms" />
+        </Route>
+        <Route path="/rooms" component={Dashboard} />
+        <Route path="/room/:id" component={ChatRoom} />
+        <Route path="/room/:id/edit" component={CreateRoom} />
+        <Route exact path='/404' component={Page404} />
+        <Redirect to="/404" />
+      </Switch>
     </div>
   );
 }
 
-export default App;
+
+export default connect(mapStateToProps, { toggleMobile })(withRouter(App));
